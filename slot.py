@@ -83,6 +83,14 @@ def _add_slots(names, frame, initfunc):
             handle_super_call()
 
 
+# Alternative spelling:
+#
+#     import slot
+#     @slot.s
+#
+s = slots
+
+
 if __name__ == "__main__":
     import random
 
