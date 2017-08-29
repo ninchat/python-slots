@@ -47,19 +47,24 @@ def _add_slots(names, frame, initfunc):
             if x:
                 return x
 
+    def lookup(name):
+        try:
+            return frame.f_locals[name]
+        except KeyError:
+            return frame.f_globals[name]
+
     def handle_super_call():
         classnode = find_class(rootnode)
         if not classnode:
             raise Exception("Class definition containing {} not found in {}", initfunc, rootnode)
 
-        for b in classnode.bases:
-            if not isinstance(b, ast.Name):
-                raise Exception("Base class expression not supported")
-
-            try:
-                base = frame.f_locals[b.id]
-            except KeyError:
-                base = frame.f_globals[b.id]
+        for x in classnode.bases:
+            if isinstance(x, ast.Name):
+                base = lookup(x.id)
+            elif isinstance(x, ast.Attribute) and isinstance(x.value, ast.Name):
+                base = getattr(lookup(x.value.id), x.attr)
+            else:
+                raise Exception("Base class expression not supported: {}".format(x))
 
             try:
                 names.update(getattr(base, "__slots__"))
