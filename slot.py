@@ -22,11 +22,11 @@ def _add_slots(names, frame, initfunc):
     with open(code.co_filename) as f:
         rootnode = ast.parse(f.read(), code.co_filename)
 
+    funcnode = None
     for node in ast.walk(rootnode):
-        if isinstance(node, ast.FunctionDef) and node.lineno == code.co_firstlineno:
+        if isinstance(node, ast.FunctionDef) and node.lineno >= code.co_firstlineno and (funcnode is None or node.lineno < funcnode.lineno):
             funcnode = node
-            break
-    else:
+    if funcnode is None:
         raise Exception("{} not found in {} at line {}".format(initfunc, rootnode, code.co_firstlineno))
 
     def add_self_attribute_names(node):
